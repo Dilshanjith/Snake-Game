@@ -9,7 +9,7 @@ public class Graphics extends JPanel implements ActionListener {
 
     static final int WIDTH = 800;
     static final  int HEIGHT = 800;
-    static final  int TICK_SIZE = 50;
+    static final  int TICK_SIZE = 30;
     static final  int BOARD_SIZE = (WIDTH * HEIGHT) /(TICK_SIZE *TICK_SIZE);
 
     final Font font = new Font("TimesRoman",Font.BOLD, 30);
@@ -17,6 +17,9 @@ public class Graphics extends JPanel implements ActionListener {
     int[] snakePosX = new int[BOARD_SIZE];
     int[] snakePosY = new int[BOARD_SIZE];
     int snakeLength;
+
+    Food food;
+    int foodEaten;
 
     char direction ='R';
     boolean isMoving = false;
@@ -65,22 +68,27 @@ public class Graphics extends JPanel implements ActionListener {
         snakePosX = new int[BOARD_SIZE];
         snakePosY = new int[BOARD_SIZE];
         snakeLength = 5;
+        foodEaten = 0;
         direction = 'R';
         isMoving = true;
+        spawnFood();
         timer.start();
     }
 
     @Override
     protected void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
+
         if(isMoving){
+            g.setColor(Color.BLUE);
+            g.fillOval(food.getPosX(), food.getPosY(), TICK_SIZE,TICK_SIZE);
             g.setColor(Color.DARK_GRAY);
             for(int i = 0; i < snakeLength; i++){
                 g.fillRect(snakePosX[i], snakePosY[i], TICK_SIZE,TICK_SIZE);
             }
 
         }else{
-            String scoreText = String.format("The End... Score: %d... press any key to play again!",0);
+            String scoreText = String.format("The End... Score: %d... press any key to play again!",foodEaten);
             g.setColor(Color.BLACK);
             g.setFont(font);
             g.drawString(scoreText,(WIDTH - getFontMetrics(g.getFont()).stringWidth(scoreText))/ 2, HEIGHT/2);
@@ -100,6 +108,19 @@ public class Graphics extends JPanel implements ActionListener {
             case 'L' -> snakePosX[0] -= TICK_SIZE;
             case 'R' -> snakePosX[0] += TICK_SIZE;
 
+        }
+    }
+
+    protected void  spawnFood(){
+        food = new Food();
+
+    }
+
+    protected void eatFood(){
+        if((snakePosX[0] == food.getPosX()) && (snakePosY[0] == food.getPosY())){
+            snakeLength++;
+            foodEaten++;
+            spawnFood();
         }
     }
 
@@ -124,6 +145,7 @@ public class Graphics extends JPanel implements ActionListener {
         if (isMoving) {
             move();
             collisionTest();
+            eatFood();
         }
         repaint();
     }
